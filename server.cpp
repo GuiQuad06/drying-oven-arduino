@@ -33,35 +33,40 @@ static void printWifiStatus();
  */
 err_t server_init(void)
 {
+  err_t err = ERR_SUCCESS;
   // check for the WiFi module:
   if (WiFi.status() == WL_NO_MODULE)
   {
-    return ERR_FAILURE;
+    err = ERR_FAILURE;
   }
+  else
+  {
+    String fv = WiFi.firmwareVersion();
+    if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
+      err = NEEDS_UPDATE;
+    }
 
-  String fv = WiFi.firmwareVersion();
-  if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
-    // TODO Inform user without serial
+    // attempt to connect to WiFi network:
+    while (status != WL_CONNECTED) {
+      // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+      status = WiFi.begin(ssid, pass);
+
+      // wait 10 seconds for connection:
+      delay(10000);
+    }
   }
-
-  // attempt to connect to WiFi network:
-  while (status != WL_CONNECTED) {
-    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-    status = WiFi.begin(ssid, pass);
-
-    // wait 10 seconds for connection:
-    delay(10000);
-  }
-  return ERR_SUCCESS;
+  return err;
 }
 
 /**
  * @brief Initialize REST API for web server
  * @param[in] temp Temperature as int
  * @param[in] hum Humidity as int
+ * @param[in] dht_temp DHT22 Temperature as int
+ * @param[in] dht_hum DHT22 Humidity as int
  * @param[in] bat battery level in percentage
  */
-void server_setupRest(int &temp, int &hum, int &bat)
+void server_setupRest(int &temp, int &hum, int &dht_temp, int &dht_hum, int &bat)
 {
   // Give name and ID to device
   rest.set_id("001");
@@ -70,6 +75,8 @@ void server_setupRest(int &temp, int &hum, int &bat)
   // Init variables and expose them to REST API
   rest.variable("temperature", &temp);
   rest.variable("humidity", &hum);
+  rest.variable("dht_temperature", &dht_temp);
+  rest.variable("dht_humidity", &dht_hum);
   rest.variable("battery", &bat);
 }
 

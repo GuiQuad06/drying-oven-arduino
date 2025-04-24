@@ -7,46 +7,56 @@
  created 19 april 2025
  by gcuadrado
  */
-#include <Arduino_MKRENV.h>
 #include "batmon.h"
+#include "error.h"
+#include "sensors.h"
 #include "server.h"
 
-int temperature = 0;
-int humidity = 0;
 int battLevel = 0;
+
+sensors_data_t sensorsData;
+static err_t err = ERR_SUCCESS;
 
 void setup(void)
 {  
-  err_t err = ERR_SUCCESS;
-
   pinMode(LED_BUILTIN, OUTPUT);
-
-  if (!ENV.begin())
-  {
-    // do not continue
-    while (1);
-  }
 
   batmon_init();
 
-  err = server_init();
-  if (ERR_FAILURE == err)
+  err = sensors_init(&sensorsData);
+  if (ERR_SUCCESS != err)
   {
     // do not continue
     while(1);
   }
 
-  server_setupRest(temperature, humidity, battLevel);
+  err = server_init();
+  if (ERR_SUCCESS != err && NEEDS_UPDATE != err)
+  {
+    // do not continue
+    while(1);
+  }
+
+  server_setupRest(sensorsData.temperature,
+                  sensorsData.humidity,
+                  sensorsData.dht_temp,
+                  sensorsData.dht_hum,
+                  battLevel);
   server_begin();
   // Init succeed
   digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop() {
-  temperature = (int)ENV.readTemperature();
-  humidity    = (int)ENV.readHumidity();
-
   battLevel = batmon_getBattData();
+
+  err = sensors_getValues(&sensorsData);
+  if (ERR_SUCCESS != err)
+  {
+    // do not continue
+    while(1);
+  }
   
   server_listen();
+  delay(2000);
 }
