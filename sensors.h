@@ -1,6 +1,11 @@
 #ifndef SENSORS_H
 #define SENSORS_H
 
+#include "error.h"
+
+/**
+ * @brief Data structure to store data sensors
+ */
 typedef struct {
   int temperature;
   int humidity;
@@ -8,7 +13,7 @@ typedef struct {
   int dht_hum;
 } sensors_data_t;
 
-void sensors_init(sensors_data_t *data);
-void sensors_getValues(sensors_data_t *data);
+err_t sensors_init(sensors_data_t *data);
+err_t sensors_getValues(sensors_data_t *data);
 
 #endif // SENSORS_H

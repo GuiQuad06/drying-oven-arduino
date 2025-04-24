@@ -1,13 +1,7 @@
 #ifndef SERVER_CORE_H
 #define SERVER_CORE_H
 
-/**
- * @brief Basic Error Handler
- */
-typedef enum {
-  ERR_SUCCESS = 0,
-  ERR_FAILURE = 1
-} err_t;
+#include "error.h"
 
 err_t server_init(void);
 void server_setupRest(int &temp, int &hum, int &dht_temp, int &dht_hum, int &bat);

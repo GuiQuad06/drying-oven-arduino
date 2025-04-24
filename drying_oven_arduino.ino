@@ -8,25 +8,31 @@
  by gcuadrado
  */
 #include "batmon.h"
+#include "error.h"
 #include "sensors.h"
 #include "server.h"
 
 int battLevel = 0;
 
 sensors_data_t sensorsData;
+static err_t err = ERR_SUCCESS;
 
 void setup(void)
 {  
-  err_t err = ERR_SUCCESS;
-
   Serial.begin(115200);
   while(!Serial);
 
-  sensors_init(&sensorsData);
   batmon_init();
 
-  err = server_init();
+  err = sensors_init(&sensorsData);
   if (ERR_SUCCESS != err)
+  {
+    // do not continue
+    while(1);
+  }
+
+  err = server_init();
+  if (ERR_SUCCESS != err && NEEDS_UPDATE != err)
   {
     // do not continue
     while(1);
@@ -43,7 +49,12 @@ void setup(void)
 void loop() {
   battLevel = batmon_getBattData();
 
-  sensors_getValues(&sensorsData);
+  err = sensors_getValues(&sensorsData);
+  if (ERR_SUCCESS != err)
+  {
+    // do not continue
+    while(1);
+  }
   
   server_listen();
   delay(2000);

@@ -2,7 +2,7 @@
 #include "DHT.h"
 #include "sensors.h"
 
-#define DHTPIN 3     // Digital pin connected to the DHT sensor
+#define DHTPIN 3        // Digital pin connected to the DHT sensor
 #define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
 
 // Initialize DHT sensor.
@@ -11,12 +11,17 @@
 // as the current DHT reading algorithm adjusts itself to work on faster procs.
 DHT dht(DHTPIN, DHTTYPE);
 
-void sensors_init(sensors_data_t *data)
+/**
+ * @brief Initialize sensors
+ * @param[in/out] data Pointer to structure sensors_data_t
+ * @return err_t Error status
+ */
+err_t sensors_init(sensors_data_t *data)
 {
+  err_t err = ERR_SUCCESS;
   if (data == NULL)
   {
-    // TODO Error Handler
-    return;
+    err = ERR_INVALID_POINTER;
   }
   else
   {
@@ -30,17 +35,23 @@ void sensors_init(sensors_data_t *data)
     if (!ENV.begin())
     {
       Serial.println("Failed to initialize MKR ENV Shield!");
-      while (1);
+      err = ERR_FAILURE;
     }
   }
+  return err;
 }
 
-void sensors_getValues(sensors_data_t *data)
+/**
+ * @brief Get values from sensors (builtin & DHT22)
+ * @param[in/out] data Pointer to structure sensors_data_t
+ * @return err_t Error status
+ */
+err_t sensors_getValues(sensors_data_t *data)
 {
+  err_t err = ERR_SUCCESS;
   if (data == NULL)
   {
-    // TODO Error Handler
-    return;
+    err = ERR_INVALID_POINTER;
   }
   else
   {
@@ -55,9 +66,10 @@ void sensors_getValues(sensors_data_t *data)
     // Check if any reads failed and exit early (to try again).
     if (isnan(h) || isnan(t)) {
       Serial.println(F("Failed to read from DHT sensor!"));
-      return;
+      err = ERR_INVALID_ARGUMENT;
     }
     data->dht_temp = (int)t;
     data->dht_hum = (int)h;
   }
+  return err;
 }

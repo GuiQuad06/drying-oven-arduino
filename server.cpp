@@ -33,29 +33,33 @@ static void printWifiStatus();
  */
 err_t server_init(void)
 {
+  err_t err = ERR_SUCCESS;
   // check for the WiFi module:
   if (WiFi.status() == WL_NO_MODULE)
   {
     Serial.println("Communication with WiFi module failed!");
-    return ERR_FAILURE;
+    err = ERR_FAILURE;
   }
+  else
+  {
+    String fv = WiFi.firmwareVersion();
+    if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
+      Serial.println("Please upgrade the firmware");
+      err = NEEDS_UPDATE;
+    }
 
-  String fv = WiFi.firmwareVersion();
-  if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
-    Serial.println("Please upgrade the firmware");
+    // attempt to connect to WiFi network:
+    while (status != WL_CONNECTED) {
+      Serial.print("Attempting to connect to SSID: ");
+      Serial.println(ssid);
+      // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+      status = WiFi.begin(ssid, pass);
+
+      // wait 10 seconds for connection:
+      delay(10000);
+    }
   }
-
-  // attempt to connect to WiFi network:
-  while (status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to SSID: ");
-    Serial.println(ssid);
-    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-    status = WiFi.begin(ssid, pass);
-
-    // wait 10 seconds for connection:
-    delay(10000);
-  }
-  return ERR_SUCCESS;
+  return err;
 }
 
 /**
