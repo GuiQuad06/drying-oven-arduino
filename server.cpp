@@ -1,3 +1,11 @@
+/*
+  Server module
+
+ Defines the Web server handler with REST API. 
+
+ created 19 april 2025
+ by gcuadrado
+ */
 #include <Arduino.h>
 #include <SPI.h>
 #include <WiFiNINA.h>
@@ -53,9 +61,10 @@ err_t server_init(void)
 /**
  * @brief Initialize REST API for web server
  * @param[in] temp Temperature as int
- * @param[in] hum Humidity as int 
+ * @param[in] hum Humidity as int
+ * @param[in] bat battery level in percentage
  */
-void server_setupRest(int &temp, int &hum)
+void server_setupRest(int &temp, int &hum, int &bat)
 {
   // Give name and ID to device
   rest.set_id("001");
@@ -64,6 +73,7 @@ void server_setupRest(int &temp, int &hum)
   // Init variables and expose them to REST API
   rest.variable("temperature", &temp);
   rest.variable("humidity", &hum);
+  rest.variable("battery", &bat);
 }
 
 /**

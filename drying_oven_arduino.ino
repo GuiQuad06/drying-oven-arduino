@@ -8,10 +8,12 @@
  by gcuadrado
  */
 #include <Arduino_MKRENV.h>
+#include "batmon.h"
 #include "server.h"
 
 int temperature = 0;
 int humidity = 0;
+int battLevel = 0;
 
 void setup(void)
 {  
@@ -25,6 +27,8 @@ void setup(void)
     while (1);
   }
 
+  batmon_init();
+
   err = server_init();
   if (ERR_SUCCESS != err)
   {
@@ -32,13 +36,15 @@ void setup(void)
     while(1);
   }
 
-  server_setupRest(temperature, humidity);
+  server_setupRest(temperature, humidity, battLevel);
   server_begin();
 }
 
 void loop() {
   temperature = (int)ENV.readTemperature();
   humidity    = (int)ENV.readHumidity();
+
+  battLevel = batmon_getBattData();
   
   server_listen();
 }
