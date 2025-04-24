@@ -1,0 +1,91 @@
+/*
+  Server module
+
+ Defines the Web server handler with REST API. 
+
+ created 19 april 2025
+ by gcuadrado
+ */
+#include <Arduino.h>
+#include <SPI.h>
+#include <WiFiNINA.h>
+#include <aREST.h>
+
+#include "arduino_secrets.h"
+#include "server.h"
+
+const uint16_t port = 80;
+///////please enter your sensitive data in the Secret tab/arduino_secrets.h
+char ssid[] = SECRET_SSID;    // your network SSID
+char pass[] = SECRET_PASS;    // your network password
+int status = WL_IDLE_STATUS;
+
+aREST rest = aREST();
+WiFiServer restServer(port);
+
+// Static function prototypes
+static void printWifiStatus();
+
+// PUBLIC FUNCTIONS
+/**
+ * @brief Initialize server and WIFI connection
+ * @return err_t Error status 
+ */
+err_t server_init(void)
+{
+  // check for the WiFi module:
+  if (WiFi.status() == WL_NO_MODULE)
+  {
+    return ERR_FAILURE;
+  }
+
+  String fv = WiFi.firmwareVersion();
+  if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
+    // TODO Inform user without serial
+  }
+
+  // attempt to connect to WiFi network:
+  while (status != WL_CONNECTED) {
+    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+    status = WiFi.begin(ssid, pass);
+
+    // wait 10 seconds for connection:
+    delay(10000);
+  }
+  return ERR_SUCCESS;
+}
+
+/**
+ * @brief Initialize REST API for web server
+ * @param[in] temp Temperature as int
+ * @param[in] hum Humidity as int
+ * @param[in] bat battery level in percentage
+ */
+void server_setupRest(int &temp, int &hum, int &bat)
+{
+  // Give name and ID to device
+  rest.set_id("001");
+  rest.set_name("drying_oven");
+
+  // Init variables and expose them to REST API
+  rest.variable("temperature", &temp);
+  rest.variable("humidity", &hum);
+  rest.variable("battery", &bat);
+}
+
+/**
+ * @brief Start Server on port 80
+ */
+void server_begin()
+{
+  restServer.begin();
+}
+
+/**
+ * @brief Handle clients connection
+ */
+void server_listen()
+{
+  WiFiClient client = restServer.available();
+  rest.handle(client);
+}
