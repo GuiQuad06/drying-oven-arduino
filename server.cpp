@@ -62,9 +62,11 @@ err_t server_init(void)
  * @brief Initialize REST API for web server
  * @param[in] temp Temperature as int
  * @param[in] hum Humidity as int
+ * @param[in] dht_temp DHT22 Temperature as int
+ * @param[in] dht_hum DHT22 Humidity as int
  * @param[in] bat battery level in percentage
  */
-void server_setupRest(int &temp, int &hum, int &bat)
+void server_setupRest(int &temp, int &hum, int &dht_temp, int &dht_hum, int &bat)
 {
   // Give name and ID to device
   rest.set_id("001");
@@ -73,6 +75,8 @@ void server_setupRest(int &temp, int &hum, int &bat)
   // Init variables and expose them to REST API
   rest.variable("temperature", &temp);
   rest.variable("humidity", &hum);
+  rest.variable("dht_temperature", &dht_temp);
+  rest.variable("dht_humidity", &dht_hum);
   rest.variable("battery", &bat);
 }
 

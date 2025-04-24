@@ -7,13 +7,13 @@
  created 19 april 2025
  by gcuadrado
  */
-#include <Arduino_MKRENV.h>
 #include "batmon.h"
+#include "sensors.h"
 #include "server.h"
 
-int temperature = 0;
-int humidity = 0;
 int battLevel = 0;
+
+sensors_data_t sensorsData;
 
 void setup(void)
 {  
@@ -22,11 +22,7 @@ void setup(void)
   Serial.begin(115200);
   while(!Serial);
 
-  if (!ENV.begin()) {
-    Serial.println("Failed to initialize MKR ENV Shield!");
-    while (1);
-  }
-
+  sensors_init(&sensorsData);
   batmon_init();
 
   err = server_init();
@@ -36,15 +32,19 @@ void setup(void)
     while(1);
   }
 
-  server_setupRest(temperature, humidity, battLevel);
+  server_setupRest(sensorsData.temperature,
+                  sensorsData.humidity,
+                  sensorsData.dht_temp,
+                  sensorsData.dht_hum,
+                  battLevel);
   server_begin();
 }
 
 void loop() {
-  temperature = (int)ENV.readTemperature();
-  humidity    = (int)ENV.readHumidity();
-
   battLevel = batmon_getBattData();
+
+  sensors_getValues(&sensorsData);
   
   server_listen();
+  delay(2000);
 }
