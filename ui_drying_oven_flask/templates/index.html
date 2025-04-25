@@ -39,24 +39,38 @@
                     </div>
                 </div>
             </div>
+            <!-- Battery Pie Chart -->
+            <div class="col-md-6">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h3 class="card-title">Battery</h3>
+                        <canvas id="batteryChart" style="max-width: 400px; margin: auto;"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         // Get data from Flask
-        let temperature = Math.max(0, {{ data.variables.temperature }});
-        let humidity = Math.max(0, {{ data.variables.humidity }});
+        let temperature = Math.max(0, {{ data.variables.dht_temperature }});
+        let humidity = Math.max(0, {{ data.variables.dht_humidity }});
+        let battLevel = Math.max(0, {{ data.variables.battery}});
 
         // Function to update charts dynamically
         function updateCharts() {
             const maxTemp = parseFloat(document.getElementById('maxTemp').value) || 100;
             const maxHumidity = parseFloat(document.getElementById('maxHumidity').value) || 100;
+            const maxBattLevel = 100;
 
             tempChart.data.datasets[0].data = [temperature, Math.max(0, maxTemp - temperature)];
             tempChart.update();
 
             humidityChart.data.datasets[0].data = [humidity, Math.max(0, maxHumidity - humidity)];
             humidityChart.update();
+
+            batteryChart.data.datasets[0].data = [battLevel, Math.max(0, maxBattLevel - battLevel)];
+            batteryChart.update();
         }
 
         // Temperature Chart
@@ -89,6 +103,27 @@
                 datasets: [{
                     data: [humidity, 100 - humidity],
                     backgroundColor: ['#36a2eb', '#e0e0e0']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+
+        // Battery Level Chart
+        const batteryCtx = document.getElementById('batteryChart').getContext('2d');
+        const batteryChart = new Chart(batteryCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Level', 'Remaining'],
+                datasets: [{
+                    data: [battLevel, 100 - battLevel],
+                    backgroundColor: ['#4caf50', '#c8e6c9']
                 }]
             },
             options: {

@@ -12,11 +12,11 @@ def home():
     except requests.exceptions.RequestException as e:
         # Log the error and provide fallback data
         print(f"Error fetching data: {e}")
-        json_data = {"variables": {"temperature": "N/A", "humidity": "N/A"}}
+        json_data = {"variables": {"temperature": "N/A", "humidity": "N/A", "dht_temperature": "N/A", "dht_humidity": "N/A", "battery": "N/A"}}
     except ValueError:
         # Handle JSON decoding errors
         print("Error decoding JSON response")
-        json_data = {"variables": {"temperature": "N/A", "humidity": "N/A"}}
+        json_data = {"variables": {"temperature": "N/A", "humidity": "N/A", "dht_temperature": "N/A", "dht_humidity": "N/A", "battery": "N/A"}}
 
     return render_template("index.html", data=json_data)
 
